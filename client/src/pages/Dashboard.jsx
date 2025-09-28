@@ -16,9 +16,7 @@ export default function Dashboard({ currentUser }) {
 
   // Filters + articles
   const [filterUserId, setFilterUserId] = useState("");
-  const { data: articlesData } = useArticles(
-    filterUserId ? { userId: filterUserId } : undefined
-  );
+  useArticles(filterUserId ? { userId: filterUserId } : undefined); // keep cache warm
 
   // Modal editor state
   const [editorOpen, setEditorOpen] = useState(false);
@@ -34,12 +32,12 @@ export default function Dashboard({ currentUser }) {
   };
   const closeEditor = () => setEditorOpen(false);
   const onSaved = () => {
-    // react-query invalidation happens in hooks; no extra work needed here
+    /* react-query invalidations handled in hooks */
   };
 
   return (
     <div className="dashboard-grid">
-      {/* LEFT: Stats + Chart */}
+      {/* LEFT: Stats + Chart, stretches to viewport height */}
       <div className="full-width-card">
         <div className="card">
           <div className="stats-grid">
@@ -52,7 +50,6 @@ export default function Dashboard({ currentUser }) {
               <div className="stat-label">Total Articles</div>
             </div>
           </div>
-
           <div className="chart-container">
             <StatsChart />
           </div>
@@ -95,7 +92,7 @@ export default function Dashboard({ currentUser }) {
           </div>
         </div>
 
-        {/* Article Management header */}
+        {/* Article Management */}
         <div className="sidebar-section">
           <div className="card-header">
             <h3 className="card-title">Management</h3>
@@ -123,12 +120,8 @@ export default function Dashboard({ currentUser }) {
             </div>
           </div>
 
-          {/* Scrollable Articles List */}
-          <div
-            className="articles-scroll"
-            style={{ maxHeight: "calc(100vh - 420px)" }}
-          >
-            {/* <h4 style={{ margin: "0 0 0.75rem" }}>All Articles</h4> */}
+          {/* Scrollable Articles List (never clips last card) */}
+          <div className="articles-scroll">
             <ArticleList
               currentUser={currentUser}
               onEdit={openEdit}

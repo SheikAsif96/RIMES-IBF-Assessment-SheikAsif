@@ -141,6 +141,8 @@ body {
 .grid-2 {
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
 }
+
+/* Stats */
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -164,25 +166,31 @@ body {
   font-size: 0.9rem;
 }
 
-/* Dashboard two-column layout */
+/* Dashboard two-column layout: fill viewport height */
 .dashboard-grid {
   display: grid;
   grid-template-columns: 1.4fr 0.8fr;
   gap: 1.25rem;
-  align-items: start;
+  align-items: stretch; /* columns match height */
+  min-height: calc(100vh - 140px); /* navbar + top spacing offset */
 }
 .full-width-card {
   width: 100%;
 }
+.full-width-card > .card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
 
-/* Chart */
+/* Chart fills remaining height on the left card */
 .chart-container {
   background: #fff;
   border: 1px solid #e2e8f0;
   border-radius: 10px;
   padding: 1rem;
-  min-height: 360px;
-  height: 420px;
+  flex: 1 1 auto; /* grow to fill parent */
+  min-height: 360px; /* keep readability */
 }
 
 /* Sidebar */
@@ -203,12 +211,22 @@ body {
   max-height: 220px;
   overflow: auto;
 }
+
+/* Articles list: dedicated scroller that never clips the last card */
 .articles-scroll {
   overflow: auto;
-  padding-right: 4px;
+  padding-right: 6px; /* space for scrollbar */
+  padding-bottom: 12px; /* keep last card visible */
+  /* Subtract estimated sidebar internals:
+     - total sidebar height (100vh - 140px)
+     - users panel (up to 220px)
+     - management header (about 56px)
+     - gaps/paddings (approx 64px)
+  */
+  max-height: calc(100vh - 140px - 220px - 56px - 64px);
 }
 
-/* Articles list */
+/* Articles list items */
 .article-item {
   background: #fff;
   border: 1px solid #e2e8f0;
@@ -323,8 +341,16 @@ body {
   }
   .dashboard-grid {
     grid-template-columns: 1fr;
+    min-height: initial;
+  }
+  .full-width-card > .card {
+    height: auto;
   }
   .sidebar-card {
     max-height: initial;
+  }
+  .articles-scroll {
+    max-height: initial;
+    padding-bottom: 0;
   }
 }
