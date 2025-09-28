@@ -351,3 +351,33 @@ body {
     grid-template-columns: 1fr;
   }
 }
+
+/* Enhanced responsive styles for 375px mobile and 1440px desktop */
+@media (max-width: 375px) {
+  .main-content {
+    padding: 0.5rem;
+  }
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+  .modal {
+    width: 95%;
+    padding: 1rem;
+  }
+  .navbar {
+    flex-direction: column;
+    height: auto;
+  }
+}
+
+@media (min-width: 1440px) {
+  .main-content {
+    max-width: 1400px;
+  }
+  .stats-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+  .grid-2 {
+    grid-template-columns: 2fr 1fr;
+  }
+}

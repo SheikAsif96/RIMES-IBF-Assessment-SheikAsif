@@ -1,19 +1,24 @@
-// pages/Dashboard.jsx
+// pages/Dashboard.jsx - Updated version
+import { useState } from "react";
 import StatsChart from "../components/Stats/StatsChart.jsx";
-import { useStats } from "../api/hooks.js";
+import ArticleList from "../components/Articles/ArticleList.jsx";
+import ArticleEditor from "../components/Articles/ArticleEditor.jsx";
+import UserModal from "../components/Users/UserModal.jsx";
+import { useStats, useArticles } from "../api/hooks.js";
+import UserList from "../components/Users/UsersList.jsx";
 
 export default function Dashboard({ currentUser }) {
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [filterUserId, setFilterUserId] = useState("");
+  const [showEditor, setShowEditor] = useState(false);
+  const [editingArticle, setEditingArticle] = useState(null);
+
   const { data: stats } = useStats();
+  const { data: articlesData } = useArticles({ userId: filterUserId });
 
   return (
     <div>
-      <div className="card-header">
-        <h1 className="card-title">Dashboard</h1>
-        <p style={{ color: "#6b7280", margin: 0 }}>
-          Overview of your content management system
-        </p>
-      </div>
-
+      {/* Stats Section */}
       <div className="stats-grid">
         <div className="stat-card">
           <div className="stat-value">{stats?.usersTotal || 0}</div>
@@ -23,37 +28,69 @@ export default function Dashboard({ currentUser }) {
           <div className="stat-value">{stats?.articlesTotal || 0}</div>
           <div className="stat-label">Total Articles</div>
         </div>
-        <div className="stat-card">
-          <div className="stat-value">
-            {stats?.letters
-              ? Object.values(stats.letters).reduce((a, b) => a + b, 0)
-              : 0}
-          </div>
-          <div className="stat-label">Total Letters (R,I,M,E,S)</div>
-        </div>
       </div>
 
+      {/* Chart Section */}
       <div className="chart-container">
-        <h2
-          style={{
-            marginBottom: "1.5rem",
-            fontSize: "1.25rem",
-            fontWeight: "600",
-          }}
-        >
-          Letter Frequency Analysis
-        </h2>
         <StatsChart />
       </div>
 
-      {!currentUser && (
-        <div className="card" style={{ textAlign: "center", padding: "2rem" }}>
-          <h3 style={{ marginBottom: "1rem" }}>Welcome to IBF CMS</h3>
-          <p style={{ color: "#6b7280", marginBottom: "1.5rem" }}>
-            Sign in to create and manage articles, and contribute to our
-            analytics.
-          </p>
+      {/* User List Section */}
+      <div className="card">
+        <UserList onUserClick={setSelectedUser} />
+      </div>
+
+      {/* Article Management Section */}
+      <div className="card">
+        <div className="card-header">
+          <h2>Article Management</h2>
+          <div>
+            <select
+              value={filterUserId}
+              onChange={(e) => setFilterUserId(e.target.value)}
+              className="form-select"
+            >
+              <option value="">All Users</option>
+              {/* Add user options dynamically */}
+            </select>
+            {currentUser && (
+              <button
+                className="btn btn-primary"
+                onClick={() => setShowEditor(true)}
+              >
+                Create Article
+              </button>
+            )}
+          </div>
         </div>
+
+        {showEditor && (
+          <ArticleEditor
+            initial={editingArticle}
+            onSaved={() => {
+              setShowEditor(false);
+              setEditingArticle(null);
+            }}
+          />
+        )}
+
+        <ArticleList
+          currentUser={currentUser}
+          filterUserId={filterUserId}
+          onEdit={(article) => {
+            setEditingArticle(article);
+            setShowEditor(true);
+          }}
+        />
+      </div>
+
+      {/* User Profile Modal */}
+      {selectedUser && (
+        <UserModal
+          user={selectedUser}
+          articles={articlesData?.items}
+          onClose={() => setSelectedUser(null)}
+        />
       )}
     </div>
   );
