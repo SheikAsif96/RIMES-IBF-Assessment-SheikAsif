@@ -12,7 +12,7 @@ export default function Navbar({
         IBF CMS
       </a>
 
-      <ul className="navbar-nav">
+      {/* <ul className="navbar-nav">
         <li>
           <a
             href="#"
@@ -39,7 +39,7 @@ export default function Navbar({
             Articles
           </a>
         </li>
-      </ul>
+      </ul> */}
 
       <div className="navbar-actions">
         {currentUser ? (

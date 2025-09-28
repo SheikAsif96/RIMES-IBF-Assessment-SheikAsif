@@ -1,4 +1,3 @@
-// client/src/pages/Dashboard.jsx
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "../api/client.js";
@@ -15,7 +14,7 @@ export default function Dashboard({ currentUser }) {
     queryFn: () => api.get("/api/users").then((r) => r.data),
   });
 
-  // Filters + data
+  // Filters + articles
   const [filterUserId, setFilterUserId] = useState("");
   const { data: articlesData } = useArticles(
     filterUserId ? { userId: filterUserId } : undefined
@@ -35,60 +34,71 @@ export default function Dashboard({ currentUser }) {
   };
   const closeEditor = () => setEditorOpen(false);
   const onSaved = () => {
-    // react-query hooks in useCreateArticle/useUpdateArticle already invalidate stats and articles
+    // react-query invalidation happens in hooks; no extra work needed here
   };
 
   return (
-    <div className="grid grid-2">
-      {/* Left: Stats and Chart */}
-      <div className="card">
-        <div className="stats-grid">
-          <div className="stat-card">
-            <div className="stat-value">{stats?.usersTotal || 0}</div>
-            <div className="stat-label">Total Users</div>
+    <div className="dashboard-grid">
+      {/* LEFT: Stats + Chart */}
+      <div className="full-width-card">
+        <div className="card">
+          <div className="stats-grid">
+            <div className="stat-card">
+              <div className="stat-value">{stats?.usersTotal || 0}</div>
+              <div className="stat-label">Total Users</div>
+            </div>
+            <div className="stat-card">
+              <div className="stat-value">{stats?.articlesTotal || 0}</div>
+              <div className="stat-label">Total Articles</div>
+            </div>
           </div>
-          <div className="stat-card">
-            <div className="stat-value">{stats?.articlesTotal || 0}</div>
-            <div className="stat-label">Total Articles</div>
-          </div>
-        </div>
 
-        <div className="chart-container">
-          <StatsChart />
+          <div className="chart-container">
+            <StatsChart />
+          </div>
         </div>
       </div>
 
-      {/* Right: Users and Article Management */}
-      <div className="grid">
-        {/* Active users */}
-        <div className="card">
-          <div className="card-header">
+      {/* RIGHT: Sidebar with users and article management */}
+      <div className="sidebar-card">
+        {/* Users */}
+        <div className="sidebar-section">
+          <div
+            className="card-header"
+            style={{ paddingBottom: 0, borderBottom: "none" }}
+          >
             <h3 className="card-title">Active Users ({users?.length || 0})</h3>
           </div>
-          <div className="grid-2">
-            {users?.map((u) => (
-              <div
-                key={u._id}
-                style={{ display: "flex", gap: "0.6rem", alignItems: "center" }}
-              >
-                <div className="user-avatar">
-                  {u.username?.[0]?.toUpperCase()}
-                </div>
-                <div>
-                  <div style={{ fontWeight: 700 }}>{u.username}</div>
-                  <div style={{ color: "#64748b", fontSize: "0.85rem" }}>
-                    {u.position} • {u.country}
+          <div className="users-panel">
+            <div className="grid-2">
+              {users?.map((u) => (
+                <div
+                  key={u._id}
+                  style={{
+                    display: "flex",
+                    gap: "0.6rem",
+                    alignItems: "center",
+                  }}
+                >
+                  <div className="user-avatar">
+                    {u.username?.[0]?.toUpperCase()}
+                  </div>
+                  <div>
+                    <div style={{ fontWeight: 700 }}>{u.username}</div>
+                    <div style={{ color: "#64748b", fontSize: "0.85rem" }}>
+                      {u.position} • {u.country}
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
 
-        {/* Article Management */}
-        <div className="card">
+        {/* Article Management header */}
+        <div className="sidebar-section">
           <div className="card-header">
-            <h3 className="card-title">Article Management</h3>
+            <h3 className="card-title">Management</h3>
             <div
               style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}
             >
@@ -107,22 +117,28 @@ export default function Dashboard({ currentUser }) {
               </select>
               {currentUser && (
                 <button className="btn btn-primary" onClick={openCreate}>
-                  Create Article
+                  Create
                 </button>
               )}
             </div>
           </div>
 
-          <h4 style={{ marginBottom: "0.75rem" }}>All Articles</h4>
-          <ArticleList
-            currentUser={currentUser}
-            onEdit={openEdit}
-            filterUserId={filterUserId}
-          />
+          {/* Scrollable Articles List */}
+          <div
+            className="articles-scroll"
+            style={{ maxHeight: "calc(100vh - 420px)" }}
+          >
+            {/* <h4 style={{ margin: "0 0 0.75rem" }}>All Articles</h4> */}
+            <ArticleList
+              currentUser={currentUser}
+              onEdit={openEdit}
+              filterUserId={filterUserId}
+            />
+          </div>
         </div>
       </div>
 
-      {/* Editor Modal (Create/Edit) */}
+      {/* Editor Modal */}
       <ArticleEditorModal
         open={editorOpen}
         initial={editingArticle}
