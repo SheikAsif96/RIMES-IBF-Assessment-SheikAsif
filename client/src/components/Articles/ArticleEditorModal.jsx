@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Modal from "../Common/Modal.jsx";
 import { useCreateArticle, useUpdateArticle } from "../../api/hooks.js";
+import WordCountWidget from "./WordCountWidget.jsx";
 
 export default function ArticleEditorModal({
   open,
@@ -110,6 +111,9 @@ export default function ArticleEditorModal({
       </div>
       <div style={{ fontSize: "0.85rem", color: "#64748b" }}>
         Live r/i/m/e/s: {live.r}/{live.i}/{live.m}/{live.e}/{live.s}
+      </div>
+      <div style={{ marginTop: "0.5rem" }}>
+        <WordCountWidget text={body} />
       </div>
     </Modal>
   );

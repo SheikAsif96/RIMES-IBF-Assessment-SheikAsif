@@ -1,39 +1,51 @@
-// components/Articles/WordCountWidget.jsx
-import { useState, useEffect, useRef } from "react";
+import { useEffect, useState } from "react";
+import useWordCountWS from "../../hooks/useWordCountWS.js";
 
 export default function WordCountWidget({ text }) {
+  // Prefer explicit VITE_WS_URL; fallback to VITE_API_URL then localhost
+  const base =
+    import.meta.env.VITE_WS_URL ||
+    import.meta.env.VITE_API_URL ||
+    "http://localhost:4000";
+
+  // Normalize to ws/wss
+  const wsUrl = base.startsWith("ws")
+    ? base
+    : base.replace("https://", "wss://").replace("http://", "ws://");
+
+  const { ready, last, send } = useWordCountWS(wsUrl);
   const [searchWord, setSearchWord] = useState("");
-  const [count, setCount] = useState(0);
-  const ws = useRef(null);
 
   useEffect(() => {
-    ws.current = new WebSocket("ws://localhost:4000");
-    return () => ws.current?.close();
-  }, []);
-
-  useEffect(() => {
-    if (ws.current && searchWord && text) {
-      ws.current.send(JSON.stringify({ text, searchWord }));
+    // throttle big texts
+    const t = (text || "").slice(0, 5000);
+    if (ready && searchWord) {
+      send({ text: t, searchWord });
     }
-  }, [text, searchWord]);
-
-  useEffect(() => {
-    if (ws.current) {
-      ws.current.onmessage = (event) => {
-        const data = JSON.parse(event.data);
-        if (data.count !== undefined) setCount(data.count);
-      };
-    }
-  }, []);
+  }, [text, searchWord, ready, send]);
 
   return (
-    <div className="word-count-widget">
-      <input
-        placeholder="Search word in text"
-        value={searchWord}
-        onChange={(e) => setSearchWord(e.target.value)}
-      />
-      <span>Count: {count}</span>
+    <div style={{ display: "grid", gap: 6 }}>
+      <label className="form-label" style={{ marginBottom: 0 }}>
+        Live word count
+      </label>
+      <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+        <input
+          className="form-input"
+          placeholder="Type a word"
+          value={searchWord}
+          onChange={(e) => setSearchWord(e.target.value)}
+          style={{ maxWidth: 220 }}
+        />
+        <div className="btn btn-secondary" aria-live="polite">
+          {ready
+            ? `Count: ${last?.word === searchWord ? last?.count ?? 0 : 0}`
+            : "Connecting…"}
+        </div>
+      </div>
+      <small style={{ color: "#64748b" }}>
+        WS: {wsUrl} • {ready ? "connected" : "offline"}
+      </small>
     </div>
   );
 }
