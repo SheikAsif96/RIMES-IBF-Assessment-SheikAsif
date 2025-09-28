@@ -54,7 +54,7 @@ export default function App() {
           onNavigate={setCurrentPage}
         />
 
-        <main className="main-content">
+        <main className="container">
           {currentPage === "dashboard" && (
             <Dashboard currentUser={currentUser} />
           )}

@@ -1,11 +1,17 @@
 // components/Articles/ArticleList.jsx
 import { useArticles, useDeleteArticle } from "../../api/hooks.js";
 
-export default function ArticleList({ currentUser, onEdit }) {
-  const { data, isLoading } = useArticles();
+export default function ArticleList({ currentUser, onEdit, filterUserId }) {
+  const params = filterUserId ? { userId: filterUserId } : undefined;
+  const { data, isLoading } = useArticles(params);
   const deleteMutation = useDeleteArticle();
 
   if (isLoading) return <div>Loading articles...</div>;
+
+  const items = data?.items || [];
+  const handleEdit = (a) => {
+    if (onEdit) onEdit(a);
+  };
 
   return (
     <div>
@@ -14,7 +20,7 @@ export default function ArticleList({ currentUser, onEdit }) {
       </div>
 
       <div className="grid">
-        {data?.items?.length === 0 ? (
+        {items.length === 0 ? (
           <div
             style={{ textAlign: "center", padding: "2rem", color: "#6b7280" }}
           >
@@ -24,7 +30,7 @@ export default function ArticleList({ currentUser, onEdit }) {
               : "Sign in to create articles."}
           </div>
         ) : (
-          data?.items?.map((article) => (
+          items.map((article) => (
             <div key={article._id} className="article-item">
               <div className="article-meta">
                 <span>By User {article.userId}</span>
@@ -43,19 +49,23 @@ export default function ArticleList({ currentUser, onEdit }) {
                 <div className="article-actions">
                   <button
                     className="btn btn-secondary"
-                    onClick={() => onEdit(article)}
+                    onClick={() => handleEdit(article)}
+                    aria-label={`Edit ${article.title}`}
                   >
                     Edit
                   </button>
                   <button
                     className="btn btn-danger"
+                    disabled={deleteMutation.isPending}
+                    aria-busy={deleteMutation.isPending ? "true" : "false"}
                     onClick={() => {
+                      if (deleteMutation.isPending) return;
                       if (confirm("Delete this article?")) {
                         deleteMutation.mutate(article._id);
                       }
                     }}
                   >
-                    Delete
+                    {deleteMutation.isPending ? "Deleting…" : "Delete"}
                   </button>
                 </div>
               )}
