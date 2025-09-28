@@ -354,3 +354,114 @@ body {
     padding-bottom: 0;
   }
 }
+
+/* Desktop vs mobile visibility */
+.desktop-only {
+  display: flex;
+  gap: 1rem;
+}
+.mobile-only {
+  display: none;
+}
+
+/* Mobile dropdown under the navbar */
+.mobile-menu {
+  position: absolute;
+  top: 64px;
+  left: 0;
+  right: 0;
+  background: #fff;
+  border-bottom: 1px solid #e2e8f0;
+  padding: 0.75rem 1rem;
+  display: grid;
+  gap: 0.5rem;
+  z-index: 40;
+  animation: slideDown 160ms ease-out;
+}
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Tight user name on mobile to reduce overflow */
+.user-menu .user-name {
+  display: inline-block;
+  max-width: 120px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Mobile breakpoint behavior */
+@media (max-width: 768px) {
+  .navbar {
+    padding: 0 1rem;
+  }
+  .desktop-only {
+    display: none;
+  }
+  .mobile-only {
+    display: inline-flex;
+  }
+  .container {
+    padding: 1rem;
+  }
+}
+
+/* Skeleton shimmer */
+.skeleton {
+  position: relative;
+  background: #e5e7eb;
+  overflow: hidden;
+  border-radius: 8px;
+}
+.skeleton::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(
+    90deg,
+    rgba(229, 231, 235, 0) 0%,
+    rgba(255, 255, 255, 0.6) 50%,
+    rgba(229, 231, 235, 0) 100%
+  );
+  animation: shimmer 1200ms infinite;
+}
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/* Skeleton presets */
+.skel-text {
+  height: 14px;
+  margin: 6px 0;
+}
+.skel-title {
+  height: 20px;
+  margin: 8px 0;
+}
+.skel-badge {
+  height: 28px;
+  width: 120px;
+}
+.skel-chart {
+  height: 360px;
+  border-radius: 10px;
+}
+.skel-card {
+  height: 120px;
+}
+
+/* Compact in sidebar */
+.sidebar-card .skel-card {
+  height: 96px;
+}

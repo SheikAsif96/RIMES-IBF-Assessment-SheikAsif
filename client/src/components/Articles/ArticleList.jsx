@@ -1,4 +1,4 @@
-// components/Articles/ArticleList.jsx
+import Skeleton from "../Common/Skeleton.jsx";
 import { useArticles, useDeleteArticle } from "../../api/hooks.js";
 
 export default function ArticleList({ currentUser, onEdit, filterUserId }) {
@@ -6,12 +6,17 @@ export default function ArticleList({ currentUser, onEdit, filterUserId }) {
   const { data, isLoading } = useArticles(params);
   const deleteMutation = useDeleteArticle();
 
-  if (isLoading) return <div>Loading articles...</div>;
+  if (isLoading) {
+    return (
+      <div className="grid">
+        <Skeleton className="skel-card" />
+        <Skeleton className="skel-card" />
+        <Skeleton className="skel-card" />
+      </div>
+    );
+  }
 
   const items = data?.items || [];
-  const handleEdit = (a) => {
-    if (onEdit) onEdit(a);
-  };
 
   return (
     <div>
@@ -49,7 +54,7 @@ export default function ArticleList({ currentUser, onEdit, filterUserId }) {
                 <div className="article-actions">
                   <button
                     className="btn btn-secondary"
-                    onClick={() => handleEdit(article)}
+                    onClick={() => onEdit?.(article)}
                     aria-label={`Edit ${article.title}`}
                   >
                     Edit
@@ -60,9 +65,8 @@ export default function ArticleList({ currentUser, onEdit, filterUserId }) {
                     aria-busy={deleteMutation.isPending ? "true" : "false"}
                     onClick={() => {
                       if (deleteMutation.isPending) return;
-                      if (confirm("Delete this article?")) {
+                      if (confirm("Delete this article?"))
                         deleteMutation.mutate(article._id);
-                      }
                     }}
                   >
                     {deleteMutation.isPending ? "Deleting…" : "Delete"}

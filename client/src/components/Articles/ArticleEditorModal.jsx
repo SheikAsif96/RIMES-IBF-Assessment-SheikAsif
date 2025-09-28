@@ -51,19 +51,26 @@ export default function ArticleEditorModal({
 
   if (!open) return null;
 
+  const pending = create.isPending || update.isPending;
+
   return (
     <Modal
       title={isEdit ? "Edit Article" : "Create Article"}
-      onClose={onClose}
+      onClose={pending ? () => {} : onClose}
       footer={[
-        <button key="cancel" className="btn btn-secondary" onClick={onClose}>
+        <button
+          key="cancel"
+          className="btn btn-secondary"
+          onClick={onClose}
+          disabled={pending}
+        >
           Cancel
         </button>,
         <button
           key="save"
           className="btn btn-primary"
           onClick={onSubmit}
-          disabled={create.isPending || update.isPending}
+          disabled={pending}
         >
           {isEdit
             ? update.isPending
@@ -82,6 +89,7 @@ export default function ArticleEditorModal({
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           placeholder="Article title"
+          disabled={pending}
         />
         {errors.title && (
           <small style={{ color: "#dc2626" }}>{errors.title}</small>
@@ -94,6 +102,7 @@ export default function ArticleEditorModal({
           value={body}
           onChange={(e) => setBody(e.target.value)}
           placeholder="Write the article body…"
+          disabled={pending}
         />
         {errors.body && (
           <small style={{ color: "#dc2626" }}>{errors.body}</small>

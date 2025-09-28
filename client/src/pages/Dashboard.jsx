@@ -5,18 +5,19 @@ import { useStats, useArticles } from "../api/hooks.js";
 import StatsChart from "../components/Stats/StatsChart.jsx";
 import ArticleList from "../components/Articles/ArticleList.jsx";
 import ArticleEditorModal from "../components/Articles/ArticleEditorModal.jsx";
+import Skeleton from "../components/Common/Skeleton.jsx";
 
 export default function Dashboard({ currentUser }) {
-  // Stats and users
-  const { data: stats } = useStats();
-  const { data: users } = useQuery({
+  // Stats + users
+  const { data: stats, isLoading: statsLoading } = useStats();
+  const { data: users, isLoading: usersLoading } = useQuery({
     queryKey: ["users"],
     queryFn: () => api.get("/api/users").then((r) => r.data),
   });
 
-  // Filters + articles
+  // Filters + prefetch
   const [filterUserId, setFilterUserId] = useState("");
-  useArticles(filterUserId ? { userId: filterUserId } : undefined); // keep cache warm
+  useArticles(filterUserId ? { userId: filterUserId } : undefined);
 
   // Modal editor state
   const [editorOpen, setEditorOpen] = useState(false);
@@ -32,31 +33,54 @@ export default function Dashboard({ currentUser }) {
   };
   const closeEditor = () => setEditorOpen(false);
   const onSaved = () => {
-    /* react-query invalidations handled in hooks */
+    /* invalidations handled in hooks */
   };
 
   return (
     <div className="dashboard-grid">
-      {/* LEFT: Stats + Chart, stretches to viewport height */}
+      {/* LEFT: Stats + Chart (full-height, responsive) */}
       <div className="full-width-card">
         <div className="card">
           <div className="stats-grid">
             <div className="stat-card">
-              <div className="stat-value">{stats?.usersTotal || 0}</div>
-              <div className="stat-label">Total Users</div>
+              {statsLoading ? (
+                <>
+                  <Skeleton className="skel-title" />
+                  <Skeleton className="skel-text" />
+                </>
+              ) : (
+                <>
+                  <div className="stat-value">{stats?.usersTotal || 0}</div>
+                  <div className="stat-label">Total Users</div>
+                </>
+              )}
             </div>
             <div className="stat-card">
-              <div className="stat-value">{stats?.articlesTotal || 0}</div>
-              <div className="stat-label">Total Articles</div>
+              {statsLoading ? (
+                <>
+                  <Skeleton className="skel-title" />
+                  <Skeleton className="skel-text" />
+                </>
+              ) : (
+                <>
+                  <div className="stat-value">{stats?.articlesTotal || 0}</div>
+                  <div className="stat-label">Total Articles</div>
+                </>
+              )}
             </div>
           </div>
+
           <div className="chart-container">
-            <StatsChart />
+            {statsLoading ? (
+              <Skeleton className="skel-chart" />
+            ) : (
+              <StatsChart />
+            )}
           </div>
         </div>
       </div>
 
-      {/* RIGHT: Sidebar with users and article management */}
+      {/* RIGHT: Sidebar with users and article management (own scroll) */}
       <div className="sidebar-card">
         {/* Users */}
         <div className="sidebar-section">
@@ -67,28 +91,37 @@ export default function Dashboard({ currentUser }) {
             <h3 className="card-title">Active Users ({users?.length || 0})</h3>
           </div>
           <div className="users-panel">
-            <div className="grid-2">
-              {users?.map((u) => (
-                <div
-                  key={u._id}
-                  style={{
-                    display: "flex",
-                    gap: "0.6rem",
-                    alignItems: "center",
-                  }}
-                >
-                  <div className="user-avatar">
-                    {u.username?.[0]?.toUpperCase()}
-                  </div>
-                  <div>
-                    <div style={{ fontWeight: 700 }}>{u.username}</div>
-                    <div style={{ color: "#64748b", fontSize: "0.85rem" }}>
-                      {u.position} • {u.country}
+            {usersLoading ? (
+              <div style={{ display: "grid", gap: "0.5rem" }}>
+                <Skeleton className="skel-title" />
+                <Skeleton className="skel-text" />
+                <Skeleton className="skel-text" />
+                <Skeleton className="skel-text" />
+              </div>
+            ) : (
+              <div className="grid-2">
+                {users?.map((u) => (
+                  <div
+                    key={u._id}
+                    style={{
+                      display: "flex",
+                      gap: "0.6rem",
+                      alignItems: "center",
+                    }}
+                  >
+                    <div className="user-avatar">
+                      {u.username?.[0]?.toUpperCase()}
+                    </div>
+                    <div>
+                      <div style={{ fontWeight: 700 }}>{u.username}</div>
+                      <div style={{ color: "#64748b", fontSize: "0.85rem" }}>
+                        {u.position} • {u.country}
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
 
@@ -120,8 +153,9 @@ export default function Dashboard({ currentUser }) {
             </div>
           </div>
 
-          {/* Scrollable Articles List (never clips last card) */}
+          {/* Scrollable Articles List with skeleton on load */}
           <div className="articles-scroll">
+            <h4 style={{ margin: "0 0 0.75rem" }}>All Articles</h4>
             <ArticleList
               currentUser={currentUser}
               onEdit={openEdit}
